@@ -6,7 +6,7 @@ RUN groupadd --system --gid 999 nonroot \
 WORKDIR /app
 
 ENV PYTHONUNBUFFERED=1
-ENV UV_COMPILE_BYTECODE=1
+ENV UV_COMPILE_BYTECODE=0
 ENV UV_LINK_MODE=copy
 ENV UV_NO_DEV=1
 ENV UV_TOOL_BIN_DIR=/usr/local/bin
@@ -18,10 +18,14 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 COPY . /app
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --locked
+    uv sync --locked --no-editable
 
 ENV PATH="/app/.venv/bin:$PATH"
 
 ENTRYPOINT []
 
+RUN mkdir -p /backend_static && chown nonroot:nonroot /backend_static
+
 USER nonroot
+
+WORKDIR /app/service

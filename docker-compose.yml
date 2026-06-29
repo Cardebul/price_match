@@ -1,11 +1,12 @@
 volumes:
   pgdata:
   redis_data:
+  static:
 
 services:
   pg:
     container_name: pg
-    image: postgres:18.4-alpine
+    image: pgvector/pgvector:0.8.3-pg18-trixie
     env_file: .env
     volumes:
       - pgdata:/var/lib/postgresql
@@ -20,23 +21,35 @@ services:
     volumes:
       - redis_data:/data
 
+  nginx:
+    env_file: .env
+    container_name: nginx
+    build:
+      context: nginx/
+      dockerfile: Dockerfile
+    depends_on:
+      - app
+    volumes:
+      - static:/backend_static
+    ports:
+      - "127.0.0.1:8000:80"
+    restart: on-failure
+
   app:
     container_name: app
     build: .
     env_file: .env
-    working_dir: /app/service
     depends_on:
       - pg
       - redis
+    volumes:
+      - static:/backend_static
     command: ["bash", "ex.sh"]
-    ports:
-      - 8000:8000
 
   worker:
     container_name: worker
     build: .
     env_file: .env
-    working_dir: /app/service
     depends_on:
       - pg
       - redis
