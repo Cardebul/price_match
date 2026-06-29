@@ -21,12 +21,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config.app.SECRET_KEY
+SECRET_KEY = config.app.secret_key
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config.app.DEBUG
+DEBUG = config.app.debug
 
-ALLOWED_HOSTS = config.app.ALLOWED_HOSTS
+ALLOWED_HOSTS = config.app.allowed_hosts
 
 
 # Application definition
@@ -86,11 +86,11 @@ DATABASES = {
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': config.app.DATABASE_URL.path[1:],
-#         'USER': config.app.DATABASE_URL.username,
-#         'PASSWORD': config.app.DATABASE_URL.password,
-#         'HOST': config.app.DATABASE_URL.host,
-#         'PORT': config.app.DATABASE_URL.port or 5432,
+#         'NAME': config.app.database_url.path[1:],
+#         'USER': config.app.database_url.username,
+#         'PASSWORD': config.app.database_url.password,
+#         'HOST': config.app.database_url.host,
+#         'PORT': config.app.database_url.port or 5432,
 #     }
 # }
 
@@ -119,7 +119,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = config.app.timezone
 
 USE_I18N = True
 

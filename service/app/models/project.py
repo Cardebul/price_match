@@ -1,5 +1,5 @@
 from django.db import models
-from app.models.base import Base
+from app.models.base import Base, Matchable
 from app.models.catalog import Product
 
 
@@ -28,15 +28,11 @@ class Estimate(Base):
 
     total_rows = models.PositiveIntegerField(default=0)
     parsed_rows = models.PositiveIntegerField(default=0)
+    skipped_rows = models.PositiveIntegerField(default=0)
+    row_errors = models.JSONField(default=list)
 
 
-class EstimateItem(Base):
-    MATCH_STATUS_CHOICES = [
-        ("unmatched", "Не сопоставлено"),
-        ("matched", "Сопоставлено"),
-        ("no_match", "Без соответствия"),
-    ]
-
+class EstimateItem(Base, Matchable):
     estimate = models.ForeignKey(
         Estimate, on_delete=models.CASCADE, related_name="items"
     )
@@ -58,8 +54,3 @@ class EstimateItem(Base):
         blank=True,
         related_name="estimate_items",
     )
-    match_status = models.CharField(
-        max_length=20, choices=MATCH_STATUS_CHOICES, default="unmatched"
-    )
-    match_confidence = models.FloatField(null=True, blank=True)
-    match_comment = models.TextField(blank=True)

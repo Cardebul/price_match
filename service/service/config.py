@@ -1,4 +1,4 @@
-from pydantic import SecretStr, PostgresDsn
+from pydantic import SecretStr, PostgresDsn, RedisDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -17,15 +17,17 @@ class AiSettings(BaseConfig):
 
 
 class AppSettings(BaseConfig):
-    SECRET_KEY: SecretStr
-    DEBUG: bool = False
-    ALLOWED_HOSTS: list[str] = ["localhost", "127.0.0.1"]
-    DATABASE_URL: PostgresDsn
+    secret_key: SecretStr
+    debug: bool = False
+    allowed_hosts: list[str] = ["localhost", "127.0.0.1"]
+    database_url: PostgresDsn
+    timezone: str = 'Europe/Moscow'
 
 
 class ProjectSettings(BaseConfig):
     app: AppSettings = AppSettings()
     ai: AiSettings = AiSettings()
 
+    redis: RedisDsn
 
 config = ProjectSettings()

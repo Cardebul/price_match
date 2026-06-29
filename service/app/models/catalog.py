@@ -1,4 +1,5 @@
 from django.db import models
+from pgvector.django import VectorField
 from app.models.base import Base
 
 
@@ -24,3 +25,5 @@ class Product(Base):
         blank=True,
         related_name="products",
     )
+
+    embedding = VectorField(dimensions=1536, null=True, blank=True)
