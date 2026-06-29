@@ -2,8 +2,8 @@ from rest_framework import viewsets, status, parsers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from pydantic import ValidationError as PydanticValidationError
-from app.models.project import Estimate
-from app.serializers import EstimateSerializer
+from app.models.project import Estimate, EstimateItem
+from app.serializers.estimate import EstimateSerializer, EstimateItemSerializer
 from app.schemas.excel import MappingSchema
 from app.services.excel import get_excel_preview
 from app.tasks import parse_estimate_task
@@ -23,6 +23,13 @@ class EstimateViewSet(viewsets.ModelViewSet):
 
         data = get_excel_preview(estimate.file.path)
         return Response(data)
+
+    @action(detail=True, methods=["get"])
+    def items(self, request, pk=None):
+        estimate = self.get_object()
+        items = estimate.items.all().order_by("row_number")
+        serializer = EstimateItemSerializer(items, many=True)
+        return Response(serializer.data)
 
     @action(detail=True, methods=["post"])
     def setup(self, request, pk=None):

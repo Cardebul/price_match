@@ -1,6 +1,17 @@
 from rest_framework import serializers
-from app.models.project import Estimate
+from app.models.project import EstimateItem, Estimate
+from app.serializers.catalog import ProductSerializer
 
+class EstimateItemSerializer(serializers.ModelSerializer):
+    product_details = ProductSerializer(source="product", read_only=True)
+
+    class Meta:
+        model = EstimateItem
+        fields = [
+            "id", "name", "article", "unit", "quantity", 
+            "match_status", "match_confidence", "match_comment",
+            "product", "product_details", "prices", "row_number"
+        ]
 
 class EstimateSerializer(serializers.ModelSerializer):
     file = serializers.FileField(required=True)
