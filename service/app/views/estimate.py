@@ -1,4 +1,4 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, parsers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from pydantic import ValidationError as PydanticValidationError
@@ -13,6 +13,7 @@ class EstimateViewSet(viewsets.ModelViewSet):
     queryset = Estimate.objects.all().order_by("-created_at")
     serializer_class = EstimateSerializer
     filterset_fields = ["project"]
+    parser_classes = [parsers.MultiPartParser, parsers.FormParser, parsers.JSONParser]
 
     @action(detail=True, methods=["get"])
     def preview(self, request, pk=None):

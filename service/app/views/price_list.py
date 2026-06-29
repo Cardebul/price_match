@@ -1,9 +1,9 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, parsers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from pydantic import ValidationError as PydanticValidationError
 from app.models.price_list import PriceList
-from app.serializers import PriceListSerializer
+from app.serializers import PriceListSerializer, PriceListSetupSerializer
 from app.schemas.excel import MappingSchema
 from app.services.excel import get_excel_preview
 from app.tasks import parse_price_list_task
@@ -13,6 +13,7 @@ class PriceListViewSet(viewsets.ModelViewSet):
     queryset = PriceList.objects.all().order_by("-created_at")
     serializer_class = PriceListSerializer
     filterset_fields = ["supplier"]
+    parser_classes = [parsers.MultiPartParser, parsers.FormParser, parsers.JSONParser]
 
     @action(detail=True, methods=["get"])
     def preview(self, request, pk=None):
@@ -23,7 +24,7 @@ class PriceListViewSet(viewsets.ModelViewSet):
         data = get_excel_preview(price_list.file.path)
         return Response(data)
 
-    @action(detail=True, methods=["post"])
+    @action(detail=True, methods=["post"], serializer_class=PriceListSetupSerializer)
     def setup(self, request, pk=None):
         price_list = self.get_object()
         mapping = request.data.get("column_mapping")

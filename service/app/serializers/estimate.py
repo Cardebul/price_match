@@ -3,6 +3,11 @@ from app.models.project import Estimate
 
 
 class EstimateSerializer(serializers.ModelSerializer):
+    file = serializers.FileField(required=True)
+    column_mapping = serializers.DictField(
+        child=serializers.CharField(), required=False, default=dict
+    )
+
     class Meta:
         model = Estimate
         fields = [

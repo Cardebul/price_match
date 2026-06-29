@@ -13,6 +13,8 @@ def get_excel_preview(file_path: str, limit: int = 20) -> List[List[Any]]:
     try:
         engine = _detect_engine(file_path)
         df = pd.read_excel(file_path, nrows=limit, header=None, engine=engine)
+        # Handle NaN and other JSON-incompatible float values
+        df = df.replace([float("inf"), float("-inf")], None)
         df = df.where(pd.notnull(df), None)
         return df.values.tolist()
     except Exception as e:
@@ -31,6 +33,7 @@ class ExcelParser:
     def __enter__(self):
         engine = _detect_engine(self.file_path)
         self._df = pd.read_excel(self.file_path, header=None, engine=engine)
+        self._df = self._df.replace([float("inf"), float("-inf")], None)
         self._df = self._df.where(pd.notnull(self._df), None)
         return self
 

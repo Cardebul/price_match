@@ -11,3 +11,4 @@ wheels/
 .env
 tz.txt
 .ruff_cache/
+test

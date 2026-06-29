@@ -134,6 +134,9 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = "/backend_static"
 
+MEDIA_ROOT = '/backend_media'
+MEDIA_URL = '/media/'
+
 
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
@@ -149,4 +152,5 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'Система работы с прайс-листами и сметами',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True
 }
