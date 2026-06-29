@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from pydantic import ValidationError as PydanticValidationError
 from app.models.project import Estimate
-from app.serializers.estimate import EstimateSerializer
+from app.serializers import EstimateSerializer
 from app.schemas.excel import MappingSchema
 from app.services.excel import get_excel_preview
 from app.tasks import parse_estimate_task
@@ -12,13 +12,7 @@ from app.tasks import parse_estimate_task
 class EstimateViewSet(viewsets.ModelViewSet):
     queryset = Estimate.objects.all().order_by("-created_at")
     serializer_class = EstimateSerializer
-
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        project_id = self.request.query_params.get("project")
-        if project_id:
-            queryset = queryset.filter(project_id=project_id)
-        return queryset
+    filterset_fields = ["project"]
 
     @action(detail=True, methods=["get"])
     def preview(self, request, pk=None):

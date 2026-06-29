@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from pydantic import ValidationError as PydanticValidationError
 from app.models.price_list import PriceList
-from app.serializers.price_list import PriceListSerializer
+from app.serializers import PriceListSerializer
 from app.schemas.excel import MappingSchema
 from app.services.excel import get_excel_preview
 from app.tasks import parse_price_list_task
@@ -12,13 +12,7 @@ from app.tasks import parse_price_list_task
 class PriceListViewSet(viewsets.ModelViewSet):
     queryset = PriceList.objects.all().order_by("-created_at")
     serializer_class = PriceListSerializer
-
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        supplier_id = self.request.query_params.get("supplier")
-        if supplier_id:
-            queryset = queryset.filter(supplier_id=supplier_id)
-        return queryset
+    filterset_fields = ["supplier"]
 
     @action(detail=True, methods=["get"])
     def preview(self, request, pk=None):

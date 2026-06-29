@@ -1,10 +1,11 @@
 import os
 from celery import Celery
+from service import celeryconfig
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myproject.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'service.settings')
 
-app = Celery('myproject')
+app = Celery('celery_app')
 
-app.config_from_object('celeryconfig')
+app.config_from_object(celeryconfig)
 
 app.autodiscover_tasks()

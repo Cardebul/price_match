@@ -26,4 +26,4 @@ class Product(Base):
         related_name="products",
     )
 
-    embedding = VectorField(dimensions=1536, null=True, blank=True)
+    embedding = VectorField(dimensions=256, null=True, blank=True)
