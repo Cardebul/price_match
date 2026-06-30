@@ -1,37 +1,37 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { estimatesApi } from '../shared/api';
+import { priceListsApi } from '../shared/api';
 import { CheckCircle2, AlertCircle, HelpCircle, ArrowLeft, Settings2, Edit2 } from 'lucide-react';
 import { cn } from '../shared/utils/cn';
 import ExcelSetupModal from '../shared/components/ExcelSetupModal';
 import ProductPicker from '../shared/components/ProductPicker';
 
-export default function EstimateDetailsPage() {
+export default function PriceListDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
   const [showSetup, setShowSetup] = useState(false);
   const [pickingItem, setPickingItem] = useState<{ id: string, productId?: string } | null>(null);
 
-  const { data: estimate } = useQuery({
-    queryKey: ['estimate', id],
-    queryFn: () => estimatesApi.get(id!).then(res => res.data),
+  const { data: priceList } = useQuery({
+    queryKey: ['price-list', id],
+    queryFn: () => priceListsApi.get(id!).then(res => res.data),
     enabled: !!id,
     refetchInterval: (query) => 
       query.state.data?.status === 'processing' || query.state.data?.status === 'pending' ? 2000 : false,
   });
 
   const { data: items, isLoading: itemsLoading } = useQuery({
-    queryKey: ['estimate-items', id],
-    queryFn: () => estimatesApi.items(id!).then(res => res.data),
-    enabled: !!id && estimate?.status === 'done',
+    queryKey: ['price-list-items', id],
+    queryFn: () => priceListsApi.items(id!).then(res => res.data),
+    enabled: !!id && priceList?.status === 'done',
   });
 
   const handleMatch = async (productId: string | null) => {
     if (!id || !pickingItem) return;
     try {
-      await estimatesApi.matchItem(id, pickingItem.id, productId);
-      queryClient.invalidateQueries({ queryKey: ['estimate-items', id] });
+      await priceListsApi.matchItem(id, pickingItem.id, productId);
+      queryClient.invalidateQueries({ queryKey: ['price-list-items', id] });
       setPickingItem(null);
     } catch (error) {
       console.error('Failed to match item', error);
@@ -39,7 +39,7 @@ export default function EstimateDetailsPage() {
     }
   };
 
-  if (!estimate) return <div className="p-8 text-center">Загрузка...</div>;
+  if (!priceList) return <div className="p-8 text-center">Загрузка...</div>;
 
   return (
     <div className="space-y-6">
@@ -51,13 +51,13 @@ export default function EstimateDetailsPage() {
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h2 className="text-2xl font-bold text-gray-900">{estimate.name}</h2>
+          <h2 className="text-2xl font-bold text-gray-900">{priceList.name}</h2>
           <span className={cn(
             "px-3 py-1 rounded-full text-sm font-medium",
-            estimate.status === 'done' ? "bg-green-100 text-green-700" : 
-            estimate.status === 'error' ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"
+            priceList.status === 'done' ? "bg-green-100 text-green-700" : 
+            priceList.status === 'error' ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"
           )}>
-            {estimate.status}
+            {priceList.status}
           </span>
         </div>
         
@@ -73,11 +73,11 @@ export default function EstimateDetailsPage() {
       {showSetup && id && (
          <ExcelSetupModal 
            id={id} 
-           type="estimate"
+           type="price_list"
            onClose={() => setShowSetup(false)} 
            onSuccess={() => {
              setShowSetup(false);
-             queryClient.invalidateQueries({ queryKey: ['estimate', id] });
+             queryClient.invalidateQueries({ queryKey: ['price-list', id] });
            }}
          />
       )}
@@ -90,16 +90,16 @@ export default function EstimateDetailsPage() {
         />
       )}
 
-      {estimate.status === 'processing' && (
+      {priceList.status === 'processing' && (
         <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg flex items-center gap-3">
           <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent" />
           <span className="text-blue-700 font-medium">
-            Парсинг в процессе: {estimate.parsed_rows} / {estimate.total_rows} строк...
+            Парсинг в процессе: {priceList.parsed_rows} / {priceList.total_rows} строк...
           </span>
         </div>
       )}
 
-      {estimate.status === 'done' && (
+      {priceList.status === 'done' && (
         <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
           <table className="w-full text-left border-collapse">
             <thead className="bg-gray-50 border-b">
@@ -107,8 +107,7 @@ export default function EstimateDetailsPage() {
                 <th className="px-6 py-4 font-semibold text-gray-700 text-sm">#</th>
                 <th className="px-6 py-4 font-semibold text-gray-700 text-sm">Наименование</th>
                 <th className="px-6 py-4 font-semibold text-gray-700 text-sm">Артикул</th>
-                <th className="px-6 py-4 font-semibold text-gray-700 text-sm">Кол-во</th>
-                <th className="px-6 py-4 font-semibold text-gray-700 text-sm">Доп. данные</th>
+                <th className="px-6 py-4 font-semibold text-gray-700 text-sm">Цена</th>
                 <th className="px-6 py-4 font-semibold text-gray-700 text-sm">Сопоставление (ИИ)</th>
                 <th className="px-6 py-4 font-semibold text-gray-700 text-sm text-right">Уверенность</th>
               </tr>
@@ -128,24 +127,7 @@ export default function EstimateDetailsPage() {
                       <div className="text-xs text-gray-500">{item.unit}</div>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">{item.article || '—'}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900 font-semibold">{item.quantity}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col text-xs space-y-1">
-                        {item.prices && Object.entries(item.prices).map(([key, value]) => (
-                          <span key={key} className="whitespace-nowrap">
-                            <span className="text-gray-500 font-medium">{key}:</span>{" "}
-                            <span className={cn(
-                              key.includes('price') ? "text-blue-600 font-bold" : "text-gray-700"
-                            )}>
-                              {typeof value === 'number' ? value.toLocaleString() : value}
-                            </span>
-                          </span>
-                        ))}
-                        {(!item.prices || Object.keys(item.prices).length === 0) && (
-                          <span className="text-gray-300">—</span>
-                        )}
-                      </div>
-                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-900 font-semibold">{item.price}</td>
                     <td className="px-6 py-4">
                       <div 
                         className="group/match relative cursor-pointer hover:bg-gray-50 p-1 -m-1 rounded transition"
@@ -204,13 +186,13 @@ export default function EstimateDetailsPage() {
         </div>
       )}
       
-      {estimate.status === 'error' && (
+      {priceList.status === 'error' && (
         <div className="bg-red-50 border border-red-200 p-6 rounded-xl">
           <div className="flex items-center gap-3 text-red-700 mb-2">
             <AlertCircle className="w-5 h-5" />
             <h3 className="font-bold">Ошибка парсинга</h3>
           </div>
-          <p className="text-red-600">{estimate.error_message}</p>
+          <p className="text-red-600">{priceList.error_message}</p>
         </div>
       )}
     </div>

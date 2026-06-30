@@ -9,10 +9,13 @@ export interface Supplier {
 export interface PriceList {
   id: string;
   supplier: string;
+  name: string;
   file: string;
-  status: 'new' | 'pending' | 'processing' | 'completed' | 'failed';
-  column_mapping: Record<string, any>;
+  status: 'new' | 'pending' | 'processing' | 'done' | 'error';
+  total_rows: number;
+  parsed_rows: number;
   created_at: string;
+  error_message?: string;
 }
 
 export interface Product {
@@ -61,4 +64,5 @@ export interface EstimateItem {
   match_confidence?: number;
   match_comment?: string;
   row_number: number;
+  prices?: Record<string, number>;
 }

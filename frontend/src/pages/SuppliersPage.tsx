@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { suppliersApi, priceListsApi } from '../shared/api';
-import { Search, Plus, Building2, Trash2, Edit2, Wallet, FileSpreadsheet, Upload, History } from 'lucide-react';
+import { Search, Plus, Building2, Trash2, Edit2, Wallet, FileSpreadsheet, Upload, History, Settings, ExternalLink } from 'lucide-react';
 import { cn } from '../shared/utils/cn';
 import type { Supplier, PriceList } from '../shared/types/api';
+import ExcelSetupModal from '../shared/components/ExcelSetupModal';
 
 export default function SuppliersPage() {
   const queryClient = useQueryClient();
@@ -123,21 +125,29 @@ export default function SuppliersPage() {
 
 function SupplierCard({ supplier, onEdit, onDelete }: { supplier: Supplier, onEdit: () => void, onDelete: () => void }) {
   const [showUpload, setShowUpload] = useState(false);
+  const [setupPriceListId, setSetupPriceListId] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const uploadMutation = useMutation({
     mutationFn: (formData: FormData) => priceListsApi.upload(formData),
-    onSuccess: () => {
+    onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ['price-lists', supplier.id] });
       setShowUpload(false);
       setFile(null);
+      // Open setup modal for the new price list
+      setSetupPriceListId(res.data.id);
     }
   });
 
   const { data: priceLists } = useQuery({
     queryKey: ['price-lists', supplier.id],
-    queryFn: () => priceListsApi.list({ supplier: supplier.id }).then(res => res.data)
+    queryFn: () => priceListsApi.list({ supplier: supplier.id }).then(res => res.data),
+    refetchInterval: (query) => {
+      const data = query.state.data as any[];
+      return data?.some(pl => ['pending', 'processing'].includes(pl.status)) ? 2000 : false;
+    }
   });
 
   const handleUpload = () => {
@@ -212,32 +222,69 @@ function SupplierCard({ supplier, onEdit, onDelete }: { supplier: Supplier, onEd
               Нет загруженных прайсов
             </div>
           ) : priceLists?.map(pl => (
-            <div key={pl.id} className="flex items-center justify-between p-3 border rounded-xl hover:bg-gray-50 transition">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-gray-100 rounded-lg">
-                  <FileSpreadsheet className="w-4 h-4 text-gray-500" />
+            <div key={pl.id} className="group/pl flex items-center justify-between p-3 border rounded-xl hover:bg-gray-50 transition">
+              <div 
+                className="flex items-center gap-3 cursor-pointer flex-1"
+                onClick={() => navigate(`/price-lists/${pl.id}`)}
+              >
+                <div className="p-2 bg-gray-100 rounded-lg group-hover/pl:bg-blue-600 transition">
+                  <FileSpreadsheet className="w-4 h-4 text-gray-500 group-hover/pl:text-white" />
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-gray-900">{pl.file?.split('/').pop() || 'Без названия'}</div>
+                  <div className="text-sm font-medium text-gray-900 flex items-center gap-2">
+                    {pl.file?.split('/').pop() || 'Без названия'}
+                    <ExternalLink className="w-3 h-3 text-gray-400 opacity-0 group-hover/pl:opacity-100" />
+                  </div>
                   <div className="text-[10px] text-gray-500 flex items-center gap-1">
                     <History className="w-3 h-3" />
                     {new Date(pl.created_at).toLocaleString()}
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className={cn(
-                  "text-[10px] px-2 py-0.5 rounded-full font-bold uppercase",
-                  pl.status === 'completed' ? "bg-green-100 text-green-700" :
-                  pl.status === 'failed' ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"
-                )}>
-                  {pl.status}
-                </span>
+              <div className="flex flex-col items-end gap-1">
+                <div className="flex items-center gap-3">
+                  <span className={cn(
+                    "text-[10px] px-2 py-0.5 rounded-full font-bold uppercase",
+                    pl.status === 'done' ? "bg-green-100 text-green-700" :
+                    pl.status === 'error' ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"
+                  )}>
+                    {pl.status === 'processing' && pl.total_rows 
+                      ? `Парсинг ${Math.round((pl.parsed_rows / pl.total_rows) * 100)}%`
+                      : pl.status}
+                  </span>
+                  <button 
+                  onClick={() => setSetupPriceListId(pl.id)}
+                  className="p-1.5 hover:bg-white rounded-lg text-gray-400 hover:text-blue-600 transition border border-transparent hover:border-blue-100"
+                  title="Настроить колонки"
+                  >
+                    <Settings className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                {pl.status === 'processing' && (
+                  <div className="w-32 h-1 bg-gray-100 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-blue-500 transition-all duration-500" 
+                      style={{ width: `${(pl.parsed_rows / (pl.total_rows || 1)) * 100}%` }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           ))}
         </div>
       </div>
+
+      {setupPriceListId && (
+        <ExcelSetupModal
+          id={setupPriceListId}
+          type="price_list"
+          onClose={() => setSetupPriceListId(null)}
+          onSuccess={() => {
+            setSetupPriceListId(null);
+            queryClient.invalidateQueries({ queryKey: ['price-lists', supplier.id] });
+          }}
+        />
+      )}
     </div>
   );
 }

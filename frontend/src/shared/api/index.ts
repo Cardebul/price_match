@@ -14,11 +14,16 @@ export const priceListsApi = {
   preview: (id: string) => api.get<any>(`/price-lists/${id}/preview/`),
   setup: (id: string, mapping: any) => api.post(`/price-lists/${id}/setup/`, { column_mapping: mapping }),
   get: (id: string) => api.get<PriceList>(`/price-lists/${id}/`),
+  items: (id: string) => api.get<any[]>(`/price-lists/${id}/items/`),
+  matchItem: (id: string, itemId: string, productId: string | null) => 
+    api.post(`/price-lists/${id}/match_item/`, { item_id: itemId, product_id: productId }),
 };
 
 export const catalogApi = {
   products: (params?: any) => api.get<Product[]>('/products/', { params }),
+  createProduct: (data: Partial<Product>) => api.post<Product>('/products/', data),
   groups: () => api.get<ProductGroup[]>('/product-groups/'),
+  createGroup: (data: Partial<ProductGroup>) => api.post<ProductGroup>('/product-groups/', data),
   syncEmbeddings: () => api.post('/products/sync_embeddings/'),
 };
 
@@ -34,4 +39,6 @@ export const estimatesApi = {
   setup: (id: string, mapping: any) => api.post(`/estimate/${id}/setup/`, { column_mapping: mapping }),
   get: (id: string) => api.get<Estimate>(`/estimate/${id}/`),
   items: (estimateId: string) => api.get<EstimateItem[]>(`/estimate/${estimateId}/items/`),
+  matchItem: (id: string, itemId: string, productId: string | null) => 
+    api.post(`/estimate/${id}/match_item/`, { item_id: itemId, product_id: productId }),
 };

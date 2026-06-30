@@ -4,6 +4,7 @@ import SuppliersPage from '../pages/SuppliersPage';
 import CatalogPage from '../pages/CatalogPage';
 import ProjectsPage from '../pages/ProjectsPage';
 import EstimateDetailsPage from '../pages/EstimateDetailsPage';
+import PriceListDetailsPage from '../pages/PriceListDetailsPage';
 
 export const router = createBrowserRouter([
   {
@@ -25,6 +26,10 @@ export const router = createBrowserRouter([
       {
         path: 'projects',
         element: <ProjectsPage />,
+      },
+      {
+        path: 'price-lists/:id',
+        element: <PriceListDetailsPage />,
       },
       {
         path: 'estimates/:id',
