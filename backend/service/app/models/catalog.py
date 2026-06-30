@@ -1,6 +1,6 @@
+from app.models.base import Base
 from django.db import models
 from pgvector.django import VectorField
-from app.models.base import Base
 
 
 class ProductGroup(Base):

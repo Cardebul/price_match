@@ -1,6 +1,6 @@
-from rest_framework import serializers
 from app.models.price_list import PriceList, PriceListItem
 from app.serializers.catalog import ProductSerializer
+from rest_framework import serializers
 
 
 class PriceListItemSerializer(serializers.ModelSerializer):

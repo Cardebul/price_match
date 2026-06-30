@@ -1,7 +1,6 @@
-from pgvector.django import CosineDistance
-
 from app.models.catalog import Product
 from app.services.embeddings import embed_items
+from pgvector.django import CosineDistance
 
 MATCHED_THRESHOLD = 0.40
 

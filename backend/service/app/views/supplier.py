@@ -1,6 +1,6 @@
-from rest_framework import viewsets
 from app.models import Supplier
 from app.serializers import SupplierSerializer
+from rest_framework import viewsets
 
 
 class SupplierViewSet(viewsets.ModelViewSet):

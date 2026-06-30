@@ -1,17 +1,14 @@
-from rest_framework import viewsets, status, parsers
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from pydantic import ValidationError as PydanticValidationError
-from app.models.price_list import PriceList, PriceListItem
 from app.models.catalog import Product
-from app.serializers import (
-    PriceListSerializer,
-    PriceListSetupSerializer,
-    PriceListItemSerializer,
-)
+from app.models.price_list import PriceList, PriceListItem
 from app.schemas.excel import MappingSchema
+from app.serializers import (PriceListItemSerializer, PriceListSerializer,
+                             PriceListSetupSerializer)
 from app.services.excel import get_excel_preview
 from app.tasks import parse_price_list_task
+from pydantic import ValidationError as PydanticValidationError
+from rest_framework import parsers, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 
 class PriceListViewSet(viewsets.ModelViewSet):

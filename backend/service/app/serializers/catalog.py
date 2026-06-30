@@ -1,5 +1,5 @@
-from rest_framework import serializers
 from app.models.catalog import Product, ProductGroup
+from rest_framework import serializers
 
 
 class ProductGroupSerializer(serializers.ModelSerializer):

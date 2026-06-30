@@ -1,5 +1,7 @@
 import os
+
 from celery import Celery
+
 from service import celeryconfig
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "service.settings")

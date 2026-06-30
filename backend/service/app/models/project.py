@@ -1,6 +1,6 @@
-from django.db import models
 from app.models.base import Base, Matchable
 from app.models.catalog import Product
+from django.db import models
 
 
 class Project(Base):

@@ -1,4 +1,5 @@
 import re
+
 from app.utils import doc_embedder, query_embedder
 
 

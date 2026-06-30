@@ -1,3 +1,4 @@
-from .catalog import ProductGroup, Product
+from .catalog import Product, ProductGroup
 from .supplier import Supplier
+
 # from .price_list import PriceList, PriceListItem

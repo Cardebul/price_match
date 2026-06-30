@@ -1,5 +1,6 @@
+from typing import Any, Dict, List, Type, TypeVar
+
 import pandas as pd
-from typing import List, Dict, Any, Type, TypeVar
 from pydantic import BaseModel, ValidationError
 
 T = TypeVar("T", bound=BaseModel)

@@ -1,7 +1,7 @@
-from django.db import models
-from app.models.supplier import Supplier
-from app.models.catalog import Product
 from app.models.base import Base, Matchable
+from app.models.catalog import Product
+from app.models.supplier import Supplier
+from django.db import models
 
 
 class PriceList(Base):

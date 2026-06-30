@@ -1,9 +1,9 @@
 from uuid import UUID
 
-from celery import shared_task
-from app.services.parsing import parse_price_list, parse_estimate
-from app.services.embeddings import embed_products
 from app.models.catalog import Product
+from app.services.embeddings import embed_products
+from app.services.parsing import parse_estimate, parse_price_list
+from celery import shared_task
 
 
 @shared_task

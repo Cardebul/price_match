@@ -1,5 +1,4 @@
 from app.models import Supplier
-
 from rest_framework import serializers
 
 

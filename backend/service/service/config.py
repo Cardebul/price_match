@@ -1,8 +1,7 @@
 from pathlib import Path
 
-from pydantic import SecretStr, RedisDsn, Field
+from pydantic import Field, RedisDsn, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
 
 DOTENV_PATH = Path(__file__).resolve().parent.parent.parent / ".env"
 

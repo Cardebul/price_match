@@ -1,7 +1,7 @@
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from app.models.catalog import Product
 from app.tasks import update_product_embeddings_task
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 @receiver(post_save, sender=Product)
