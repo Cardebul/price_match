@@ -43,5 +43,7 @@ class ProjectSettings(BaseConfig):
 
     redis: RedisDsn
 
+    max_diff_match: float = Field(default=0.25)
+
 
 config = ProjectSettings()

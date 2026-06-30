@@ -1,8 +1,9 @@
 from app.models.catalog import Product
 from app.services import embed_items
+from service.config import config
 from pgvector.django import CosineDistance
 
-MATCHED_THRESHOLD = 0.40
+MATCHED_THRESHOLD = config.max_diff_match
 
 
 def _status_for_distance(distance: float) -> str:

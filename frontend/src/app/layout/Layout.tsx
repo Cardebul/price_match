@@ -1,8 +1,9 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutGrid, Users, FileText, ClipboardList, LogOut } from 'lucide-react';
+import { LayoutGrid, Users, FileText, ClipboardList, LogOut, Loader2 } from 'lucide-react';
 import { cn } from '../../shared/utils/cn';
 import { useState, useEffect } from 'react';
 import AuthModal from '../../shared/components/AuthModal';
+import { authApi } from '../../shared/api/auth';
 
 const navigation = [
   { name: 'Поставщики', href: '/suppliers', icon: Users },
@@ -13,14 +14,40 @@ const navigation = [
 export default function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!localStorage.getItem('access_token'));
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isVerifying, setIsVerifying] = useState<boolean>(true);
+
+  const verifyToken = async () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      setIsAuthenticated(false);
+      setIsVerifying(false);
+      return;
+    }
+
+    try {
+      await authApi.verify(token);
+      setIsAuthenticated(true);
+    } catch (err) {
+      // Если версификация не прошла, пробуем рефреш или просто разлогиниваем
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      setIsAuthenticated(false);
+    } finally {
+      setIsVerifying(false);
+    }
+  };
 
   useEffect(() => {
-    const checkAuth = () => {
+    verifyToken();
+  }, []);
+
+  useEffect(() => {
+    const handleStorageChange = () => {
       setIsAuthenticated(!!localStorage.getItem('access_token'));
     };
-    window.addEventListener('storage', checkAuth);
-    return () => window.removeEventListener('storage', checkAuth);
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const handleLogout = () => {
@@ -29,6 +56,14 @@ export default function Layout() {
     setIsAuthenticated(false);
     navigate('/');
   };
+
+  if (isVerifying) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return <AuthModal onSuccess={() => setIsAuthenticated(true)} />;
