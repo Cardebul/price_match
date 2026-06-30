@@ -3,6 +3,7 @@ volumes:
   redis_data:
   static:
   media:
+  frontend_static:
 
 services:
   pg:
@@ -30,8 +31,11 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - app
+      - frontend
     volumes:
       - static:/backend_static
+      - frontend_static:/frontend_static
+      - media:/backend_media
     ports:
       - "127.0.0.1:8000:80"
     restart: on-failure
@@ -58,3 +62,11 @@ services:
     volumes:
       - media:/backend_media
     command: uv run celery -A service worker -l INFO
+
+  frontend:
+    container_name: frontend
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    volumes:
+      - frontend_static:/frontend_static
