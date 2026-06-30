@@ -1,3 +1,3 @@
 from .supplier import SupplierSerializer
 from .estimate import EstimateSerializer
-from .price_list import PriceListSerializer, PriceListSetupSerializer
+from .price_list import PriceListSerializer, PriceListSetupSerializer, PriceListItemSerializer

@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from pydantic import ValidationError as PydanticValidationError
 from app.models.project import Estimate, EstimateItem
+from app.models.catalog import Product
 from app.serializers.estimate import EstimateSerializer, EstimateItemSerializer
 from app.schemas.excel import MappingSchema
 from app.services.excel import get_excel_preview
@@ -51,3 +52,27 @@ class EstimateViewSet(viewsets.ModelViewSet):
         parse_estimate_task.delay(estimate.id)
 
         return Response({"status": "Parsing started"})
+
+    @action(detail=True, methods=["post"])
+    def match_item(self, request, pk=None):
+        item_id = request.data.get("item_id")
+        product_id = request.data.get("product_id")
+
+        try:
+            item = EstimateItem.objects.get(id=item_id, estimate_id=pk)
+            if product_id:
+                product = Product.objects.get(id=product_id)
+                item.product = product
+                item.match_status = "matched"
+                item.match_confidence = 1.0
+                item.match_comment = "Сопоставлено вручную"
+            else:
+                item.product = None
+                item.match_status = "no_match"
+                item.match_confidence = 0.0
+                item.match_comment = "Сброшено вручную"
+            
+            item.save()
+            return Response(EstimateItemSerializer(item).data)
+        except (EstimateItem.DoesNotExist, Product.DoesNotExist):
+            return Response({"error": "Not found"}, status=status.HTTP_404_NOT_FOUND)

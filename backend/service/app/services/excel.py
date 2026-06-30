@@ -9,16 +9,27 @@ def _detect_engine(file_path: str) -> str:
     return "xlrd" if str(file_path).lower().endswith(".xls") else "openpyxl"
 
 
-def get_excel_preview(file_path: str, limit: int = 20) -> List[List[Any]]:
+def get_excel_preview(file_path: str, limit: int = 100) -> Dict[str, Any]:
     try:
         engine = _detect_engine(file_path)
         df = pd.read_excel(file_path, nrows=limit, header=None, engine=engine)
-        # Handle NaN and other JSON-incompatible float values
-        df = df.replace([float("inf"), float("-inf")], None)
-        df = df.where(pd.notnull(df), None)
-        return df.values.tolist()
+
+        df_clean = df.dropna(how="all").dropna(axis=1, how="all")
+
+        if df_clean.empty:
+            return {"headers": [], "rows": []}
+
+        df = df.astype(object).where(pd.notnull(df), None)
+
+        rows = df.values.tolist()
+        headers = [str(c) if c is not None else "" for c in rows[0]] if rows else []
+
+        return {
+            "headers": headers,
+            "rows": rows[:20],
+        }
     except Exception as e:
-        return [[f"Error reading file: {str(e)}"]]
+        return {"headers": [], "rows": [], "error": str(e)}
 
 
 class ExcelParser:
@@ -33,8 +44,7 @@ class ExcelParser:
     def __enter__(self):
         engine = _detect_engine(self.file_path)
         self._df = pd.read_excel(self.file_path, header=None, engine=engine)
-        self._df = self._df.replace([float("inf"), float("-inf")], None)
-        self._df = self._df.where(pd.notnull(self._df), None)
+        self._df = self._df.astype(object).where(pd.notnull(self._df), None)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):

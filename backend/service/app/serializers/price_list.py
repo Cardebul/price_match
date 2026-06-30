@@ -1,5 +1,18 @@
 from rest_framework import serializers
-from app.models.price_list import PriceList
+from app.models.price_list import PriceList, PriceListItem
+from app.serializers.catalog import ProductSerializer
+
+
+class PriceListItemSerializer(serializers.ModelSerializer):
+    product_details = ProductSerializer(source="product", read_only=True)
+
+    class Meta:
+        model = PriceListItem
+        fields = [
+            "id", "name", "article", "unit", "price",
+            "match_status", "match_confidence", "match_comment",
+            "product", "product_details", "row_number"
+        ]
 
 
 class PriceListSerializer(serializers.ModelSerializer):

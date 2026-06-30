@@ -60,7 +60,6 @@ def _run_parsing(obj, item_model, row_schema, build_item, related_name, on_done=
     try:
         with transaction.atomic():
             locked = type(obj).objects.select_for_update().get(id=obj.id)
-
             mapping = locked.column_mapping
             start_row = mapping.get("start_row", 1)
             items_manager = getattr(locked, related_name)
@@ -71,7 +70,6 @@ def _run_parsing(obj, item_model, row_schema, build_item, related_name, on_done=
                     "match_status", "match_confidence", "match_comment",
                 )
             )
-            items_manager.all().delete()
 
         with ExcelParser(obj.file.path) as parser:
             obj.total_rows = parser.total_rows
@@ -95,10 +93,10 @@ def _run_parsing(obj, item_model, row_schema, build_item, related_name, on_done=
                     obj.parsed_rows = parsed_count
                     obj.save(update_fields=["parsed_rows"])
 
-            if items_to_create:
-                with transaction.atomic():
+            with transaction.atomic():
+                items_manager.all().delete()
+                if items_to_create:
                     item_model.objects.bulk_create(items_to_create)
-                parsed_count += len(items_to_create)
 
             obj.parsed_rows = parsed_count
             obj.skipped_rows = parser.skipped_count
@@ -135,7 +133,7 @@ def _build_price_list_item(price_list, row_num, validated_row, match):
 
 
 def _build_estimate_item(estimate, row_num, validated_row, match):
-    extra_prices = _serialize_extra(validated_row.model_extra or {})
+    extra_data = _serialize_extra(validated_row.model_extra or {})
     return EstimateItem(
         estimate=estimate,
         name=validated_row.name,
@@ -143,7 +141,7 @@ def _build_estimate_item(estimate, row_num, validated_row, match):
         unit=validated_row.unit or "",
         quantity=validated_row.quantity,
         row_number=row_num,
-        prices=extra_prices,
+        prices=extra_data,
         product_id=match[0] if match else None,
         match_status=match[1] if match else "unmatched",
         match_confidence=match[2] if match else None,

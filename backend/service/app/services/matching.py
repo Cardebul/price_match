@@ -3,24 +3,46 @@ from pgvector.django import CosineDistance
 from app.models.catalog import Product
 from app.services.embeddings import embed_items
 
-NO_MATCH_THRESHOLD = 0.35
+MATCHED_THRESHOLD = 0.40
 
 
 def _status_for_distance(distance: float) -> str:
-    if distance <= NO_MATCH_THRESHOLD:
+    if distance <= MATCHED_THRESHOLD:
         return "matched"
     return "no_match"
 
 
 def match_items(items, item_model):
-    items = [i for i in items if i.match_status == "unmatched"]
-    if not items:
+    items_to_match = [i for i in items if i.match_status == "unmatched"]
+    if not items_to_match:
         return
 
-    embeddings = embed_items(items)
-
     to_update = []
-    for item in items:
+    need_embeddings = []
+
+    for item in items_to_match:
+        if item.article:
+            exact = Product.objects.filter(article=item.article).first()
+            if exact:
+                item.match_status = "matched"
+                item.match_confidence = 1.0
+                item.product_id = exact.id
+                item.match_comment = f"Точное совпадение по артикулу: {exact.name}"
+                to_update.append(item)
+                continue
+        
+        need_embeddings.append(item)
+
+    if not need_embeddings:
+        if to_update:
+            item_model.objects.bulk_update(
+                to_update, ["match_status", "match_confidence", "product_id", "match_comment"]
+            )
+        return
+
+    embeddings = embed_items(need_embeddings)
+
+    for item in need_embeddings:
         vector = embeddings.get(item.id)
         if vector is None:
             continue
@@ -35,15 +57,17 @@ def match_items(items, item_model):
         if best is None:
             item.match_status = "no_match"
             item.match_confidence = None
-            item.match_comment = "В каталоге нет товаров с эмбеддингом"
+            item.match_comment = "В каталоге нет товаров с эмбеддингами"
         else:
             confidence = max(0.0, 1.0 - best.distance)
             item.match_status = _status_for_distance(best.distance)
             item.match_confidence = round(confidence, 4)
             item.product_id = best.id if item.match_status == "matched" else None
-            item.match_comment = (
-                f"Похожий товар: {best.name}" if item.match_status == "matched" else ""
-            )
+            
+            if item.match_status == "matched":
+                item.match_comment = f"Похожий товар (ИИ {int(confidence*100)}%): {best.name}"
+            else:
+                item.match_comment = f"Низкая уверенность ({int(confidence*100)}%), лучшее совпадение: {best.name}"
 
         to_update.append(item)
 
