@@ -1,4 +1,4 @@
-from rest_framework import viewsets, filters
+from rest_framework import viewsets
 from app.models import Supplier
 from app.serializers import SupplierSerializer
 

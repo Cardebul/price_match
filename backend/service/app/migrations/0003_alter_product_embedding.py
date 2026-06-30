@@ -5,15 +5,16 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('app', '0002_initial'),
+        ("app", "0002_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='product',
-            name='embedding',
-            field=pgvector.django.vector.VectorField(blank=True, dimensions=1536, null=True),
+            model_name="product",
+            name="embedding",
+            field=pgvector.django.vector.VectorField(
+                blank=True, dimensions=1536, null=True
+            ),
         ),
     ]

@@ -91,5 +91,7 @@ class ExcelParser:
                 if len(self.errors) < self.MAX_STORED_ERRORS:
                     first = e.errors()[0]
                     field = ".".join(str(p) for p in first.get("loc", ())) or "?"
-                    self.errors.append((row_num, f"{field}: {first.get('msg', 'invalid')}"))
+                    self.errors.append(
+                        (row_num, f"{field}: {first.get('msg', 'invalid')}")
+                    )
                 continue

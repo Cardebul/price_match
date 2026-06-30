@@ -31,8 +31,20 @@ def _serialize_extra(extra: dict) -> dict:
 def _build_match_index(items_qs):
     by_article = {}
     by_row = {}
-    for article, row_number, product_id, status, confidence, comment in items_qs.values_list(
-        "article", "row_number", "product_id", "match_status", "match_confidence", "match_comment"
+    for (
+        article,
+        row_number,
+        product_id,
+        status,
+        confidence,
+        comment,
+    ) in items_qs.values_list(
+        "article",
+        "row_number",
+        "product_id",
+        "match_status",
+        "match_confidence",
+        "match_comment",
     ):
         record = (product_id, status, confidence, comment)
         if article:
@@ -54,7 +66,13 @@ def _run_parsing(obj, item_model, row_schema, build_item, related_name, on_done=
     obj.row_errors = []
     obj.error_message = ""
     obj.save(
-        update_fields=["status", "parsed_rows", "skipped_rows", "row_errors", "error_message"]
+        update_fields=[
+            "status",
+            "parsed_rows",
+            "skipped_rows",
+            "row_errors",
+            "error_message",
+        ]
     )
 
     try:
@@ -66,8 +84,12 @@ def _run_parsing(obj, item_model, row_schema, build_item, related_name, on_done=
 
             by_article, by_row = _build_match_index(
                 items_manager.only(
-                    "article", "row_number", "product_id",
-                    "match_status", "match_confidence", "match_comment",
+                    "article",
+                    "row_number",
+                    "product_id",
+                    "match_status",
+                    "match_confidence",
+                    "match_comment",
                 )
             )
 
@@ -78,7 +100,9 @@ def _run_parsing(obj, item_model, row_schema, build_item, related_name, on_done=
             parsed_count = 0
             items_to_create = []
 
-            for row_num, validated_row in parser.iter_rows(row_schema, mapping, start_row=start_row):
+            for row_num, validated_row in parser.iter_rows(
+                row_schema, mapping, start_row=start_row
+            ):
                 article = getattr(validated_row, "article", None) or ""
                 match = _resolve_match(article, row_num, by_article, by_row)
 
@@ -102,7 +126,9 @@ def _run_parsing(obj, item_model, row_schema, build_item, related_name, on_done=
             obj.skipped_rows = parser.skipped_count
             obj.row_errors = [{"row": r, "error": e} for r, e in parser.errors]
             obj.status = "done"
-            obj.save(update_fields=["status", "parsed_rows", "skipped_rows", "row_errors"])
+            obj.save(
+                update_fields=["status", "parsed_rows", "skipped_rows", "row_errors"]
+            )
 
         if on_done:
             try:
@@ -152,7 +178,11 @@ def _build_estimate_item(estimate, row_num, validated_row, match):
 def parse_price_list(price_list_id: uuid.UUID | str):
     price_list = PriceList.objects.get(id=price_list_id)
     _run_parsing(
-        price_list, PriceListItem, PriceListRowSchema, _build_price_list_item, "items",
+        price_list,
+        PriceListItem,
+        PriceListRowSchema,
+        _build_price_list_item,
+        "items",
         on_done=match_price_list_items,
     )
 
@@ -160,6 +190,10 @@ def parse_price_list(price_list_id: uuid.UUID | str):
 def parse_estimate(estimate_id: uuid.UUID | str):
     estimate = Estimate.objects.get(id=estimate_id)
     _run_parsing(
-        estimate, EstimateItem, EstimateRowSchema, _build_estimate_item, "items",
+        estimate,
+        EstimateItem,
+        EstimateRowSchema,
+        _build_estimate_item,
+        "items",
         on_done=match_estimate_items,
     )

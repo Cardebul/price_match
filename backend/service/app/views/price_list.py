@@ -4,7 +4,11 @@ from rest_framework.response import Response
 from pydantic import ValidationError as PydanticValidationError
 from app.models.price_list import PriceList, PriceListItem
 from app.models.catalog import Product
-from app.serializers import PriceListSerializer, PriceListSetupSerializer, PriceListItemSerializer
+from app.serializers import (
+    PriceListSerializer,
+    PriceListSetupSerializer,
+    PriceListItemSerializer,
+)
 from app.schemas.excel import MappingSchema
 from app.services.excel import get_excel_preview
 from app.tasks import parse_price_list_task
@@ -20,7 +24,9 @@ class PriceListViewSet(viewsets.ModelViewSet):
     def preview(self, request, pk=None):
         price_list = self.get_object()
         if not price_list.file:
-            return Response({"error": "File not found"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "File not found"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         data = get_excel_preview(price_list.file.path)
         return Response(data)
@@ -31,7 +37,10 @@ class PriceListViewSet(viewsets.ModelViewSet):
         mapping = request.data.get("column_mapping")
 
         if not mapping:
-            return Response({"error": "column_mapping is required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "column_mapping is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         try:
             MappingSchema.model_validate(mapping)
@@ -71,7 +80,7 @@ class PriceListViewSet(viewsets.ModelViewSet):
                 item.match_status = "no_match"
                 item.match_confidence = 0.0
                 item.match_comment = "Сброшено вручную"
-            
+
             item.save()
             return Response(PriceListItemSerializer(item).data)
         except (PriceListItem.DoesNotExist, Product.DoesNotExist):

@@ -30,13 +30,14 @@ def match_items(items, item_model):
                 item.match_comment = f"Точное совпадение по артикулу: {exact.name}"
                 to_update.append(item)
                 continue
-        
+
         need_embeddings.append(item)
 
     if not need_embeddings:
         if to_update:
             item_model.objects.bulk_update(
-                to_update, ["match_status", "match_confidence", "product_id", "match_comment"]
+                to_update,
+                ["match_status", "match_confidence", "product_id", "match_comment"],
             )
         return
 
@@ -63,11 +64,13 @@ def match_items(items, item_model):
             item.match_status = _status_for_distance(best.distance)
             item.match_confidence = round(confidence, 4)
             item.product_id = best.id if item.match_status == "matched" else None
-            
+
             if item.match_status == "matched":
-                item.match_comment = f"Похожий товар (ИИ {int(confidence*100)}%): {best.name}"
+                item.match_comment = (
+                    f"Похожий товар (ИИ {int(confidence * 100)}%): {best.name}"
+                )
             else:
-                item.match_comment = f"Низкая уверенность ({int(confidence*100)}%), лучшее совпадение: {best.name}"
+                item.match_comment = f"Низкая уверенность ({int(confidence * 100)}%), лучшее совпадение: {best.name}"
 
         to_update.append(item)
 

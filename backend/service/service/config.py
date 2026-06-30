@@ -6,11 +6,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 DOTENV_PATH = Path(__file__).resolve().parent.parent.parent / ".env"
 
+
 class BaseConfig(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_file=DOTENV_PATH,
-        extra="ignore"
-    )
+    model_config = SettingsConfigDict(env_file=DOTENV_PATH, extra="ignore")
 
 
 class PostgresSettings(BaseConfig):
@@ -36,7 +34,7 @@ class AppSettings(BaseConfig):
     secret_key: SecretStr
     debug: bool = False
     allowed_hosts: list[str] = ["localhost", "127.0.0.1"]
-    timezone: str = 'Europe/Moscow'
+    timezone: str = "Europe/Moscow"
 
 
 class ProjectSettings(BaseConfig):
@@ -45,5 +43,6 @@ class ProjectSettings(BaseConfig):
     ai: AiSettings = AiSettings()
 
     redis: RedisDsn
+
 
 config = ProjectSettings()

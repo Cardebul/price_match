@@ -20,7 +20,9 @@ class EstimateViewSet(viewsets.ModelViewSet):
     def preview(self, request, pk=None):
         estimate = self.get_object()
         if not estimate.file:
-            return Response({"error": "File not found"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "File not found"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         data = get_excel_preview(estimate.file.path)
         return Response(data)
@@ -38,7 +40,10 @@ class EstimateViewSet(viewsets.ModelViewSet):
         mapping = request.data.get("column_mapping")
 
         if not mapping:
-            return Response({"error": "column_mapping is required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "column_mapping is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         try:
             MappingSchema.model_validate(mapping)
@@ -71,7 +76,7 @@ class EstimateViewSet(viewsets.ModelViewSet):
                 item.match_status = "no_match"
                 item.match_confidence = 0.0
                 item.match_comment = "Сброшено вручную"
-            
+
             item.save()
             return Response(EstimateItemSerializer(item).data)
         except (EstimateItem.DoesNotExist, Product.DoesNotExist):
