@@ -1,8 +1,11 @@
 from app.models.catalog import Product
 from app.models.price_list import PriceList, PriceListItem
 from app.schemas.excel import MappingSchema
-from app.serializers import (PriceListItemSerializer, PriceListSerializer,
-                             PriceListSetupSerializer)
+from app.serializers import (
+    PriceListItemSerializer,
+    PriceListSerializer,
+    PriceListSetupSerializer,
+)
 from app.services.excel import get_excel_preview
 from app.tasks import parse_price_list_task
 from pydantic import ValidationError as PydanticValidationError

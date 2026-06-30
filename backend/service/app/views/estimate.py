@@ -1,8 +1,8 @@
 from app.models.catalog import Product
 from app.models.project import Estimate, EstimateItem
 from app.schemas.excel import MappingSchema
-from app.serializers.estimate import EstimateItemSerializer, EstimateSerializer
-from app.services.excel import get_excel_preview
+from app.serializers import EstimateItemSerializer, EstimateSerializer
+from app.services import get_excel_preview
 from app.tasks import parse_estimate_task
 from pydantic import ValidationError as PydanticValidationError
 from rest_framework import parsers, status, viewsets

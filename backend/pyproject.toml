@@ -22,6 +22,5 @@ dependencies = [
 [dependency-groups]
 dev = [
     "ipython>=9.15.0",
-    "isort>=8.0.1",
     "ruff>=0.15.20",
 ]

@@ -1,5 +1,5 @@
 from app.models.catalog import Product, ProductGroup
-from app.serializers.catalog import ProductGroupSerializer, ProductSerializer
+from app.serializers import ProductGroupSerializer, ProductSerializer
 from app.tasks import update_product_embeddings_task
 from rest_framework import decorators, response, viewsets
 

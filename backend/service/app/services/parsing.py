@@ -4,8 +4,7 @@ import uuid
 from app.models.price_list import PriceList, PriceListItem
 from app.models.project import Estimate, EstimateItem
 from app.schemas.excel import EstimateRowSchema, PriceListRowSchema
-from app.services.excel import ExcelParser
-from app.services.matching import match_estimate_items, match_price_list_items
+from app.services import ExcelParser, match_estimate_items, match_price_list_items
 from django.db import transaction
 
 BATCH_SIZE = 500

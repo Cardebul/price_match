@@ -1,6 +1,11 @@
-from app.views import EstimateViewSet, PriceListViewSet, SupplierViewSet
-from app.views.catalog import ProductGroupViewSet, ProductViewSet
-from app.views.project import ProjectViewSet
+from app.views import (
+    EstimateViewSet,
+    PriceListViewSet,
+    ProductGroupViewSet,
+    ProductViewSet,
+    ProjectViewSet,
+    SupplierViewSet,
+)
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
