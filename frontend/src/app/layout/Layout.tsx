@@ -1,6 +1,8 @@
-import { Link, Outlet, useLocation } from 'react-router-dom';
-import { LayoutGrid, Users, FileText, ClipboardList } from 'lucide-react';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { LayoutGrid, Users, FileText, ClipboardList, LogOut } from 'lucide-react';
 import { cn } from '../../shared/utils/cn';
+import { useState, useEffect } from 'react';
+import AuthModal from '../../shared/components/AuthModal';
 
 const navigation = [
   { name: 'Поставщики', href: '/suppliers', icon: Users },
@@ -10,6 +12,27 @@ const navigation = [
 
 export default function Layout() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!localStorage.getItem('access_token'));
+
+  useEffect(() => {
+    const checkAuth = () => {
+      setIsAuthenticated(!!localStorage.getItem('access_token'));
+    };
+    window.addEventListener('storage', checkAuth);
+    return () => window.removeEventListener('storage', checkAuth);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    setIsAuthenticated(false);
+    navigate('/');
+  };
+
+  if (!isAuthenticated) {
+    return <AuthModal onSuccess={() => setIsAuthenticated(true)} />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -46,10 +69,17 @@ export default function Layout() {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        <header className="h-16 bg-white border-b border-gray-200 flex items-center px-8">
+        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8">
           <h1 className="text-lg font-semibold text-gray-800">
             {navigation.find(n => location.pathname.startsWith(n.href))?.name || 'Панель управления'}
           </h1>
+          <button 
+            onClick={handleLogout}
+            className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-red-600 transition"
+          >
+            <LogOut className="w-4 h-4" />
+            Выйти
+          </button>
         </header>
         
         <main className="p-8 overflow-auto">
