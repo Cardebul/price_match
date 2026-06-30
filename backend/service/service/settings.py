@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config.app.secret_key
+SECRET_KEY = config.app.secret_key.get_secret_value()
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config.app.debug
@@ -39,9 +39,13 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
     "rest_framework",
+    'rest_framework_simplejwt',
+
     "django_filters",
     "drf_spectacular",
+    
     "app.apps.AppConfig",
 ]
 
@@ -144,7 +148,14 @@ REST_FRAMEWORK = {
         "rest_framework.filters.SearchFilter",
         "rest_framework.filters.OrderingFilter",
     ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    )
 }
+
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "Price Match API",
